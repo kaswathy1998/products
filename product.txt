@@ -1,0 +1,147 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Define a struct to hold product information
+typedef struct {
+    char name[20];
+    int price;
+    int quantity;
+} Product;
+
+// Define a struct to hold cart information
+typedef struct {
+    Product products[3];
+    int num_products;
+    int subtotal;
+    int discount;
+    int shipping;
+    int gift_wrap;
+    int total;
+} Cart;
+
+// Define a function to calculate the discount for a single product
+int calculate_product_discount(Product product) {
+    int discount = 0;
+    if (product.quantity > 10) {
+        discount = product.price * product.quantity * 0.05;
+    }
+    return discount;
+}
+
+// Define a function to calculate the discount for the entire cart
+int calculate_cart_discount(Cart cart) {
+    int discount = 0;
+    int total_quantity = 0;
+    int max_quantity = 0;
+    for (int i = 0; i < cart.num_products; i++) {
+        Product product = cart.products[i];
+        int product_discount = calculate_product_discount(product);
+        discount += product_discount;
+        total_quantity += product.quantity;
+        if (product.quantity > max_quantity) {
+            max_quantity = product.quantity;
+        }
+    }
+    if (total_quantity > 20) {
+        discount += cart.subtotal * 0.1;
+    }
+    if (total_quantity > 30 && max_quantity > 15) {
+        for (int i = 0; i < cart.num_products; i++) {
+            Product product = cart.products[i];
+            if (product.quantity > 15) {
+                discount += (product.quantity - 15) * product.price * 0.5;
+            }
+        }
+    }
+    if (cart.subtotal > 200) {
+        discount += 10;
+    }
+    return discount;
+}
+
+// Define a function to calculate the shipping fee for the cart
+int calculate_shipping_fee(Cart cart) {
+    int num_packages = 0;
+    int total_quantity = 0;
+    for (int i = 0; i < cart.num_products; i++) {
+        Product product = cart.products[i];
+        total_quantity += product.quantity;
+    }
+    num_packages = (total_quantity + 9) / 10;
+    return num_packages * 5;
+}
+
+// Define a function to calculate the gift wrap fee for the cart
+int calculate_gift_wrap_fee(Cart cart) {
+    int total_quantity = 0;
+    for (int i = 0; i < cart.num_products; i++) {
+        Product product = cart.products[i];
+        total_quantity += product.quantity;
+    }
+    return total_quantity;
+}
+
+// Define a function to calculate the total cost of the cart
+int calculate_total(Cart cart) {
+    int total = cart.subtotal - cart.discount + cart.shipping + cart.gift_wrap;
+    return total;
+}
+
+// Define a function to print the cart summary
+void print_cart_summary(Cart cart) {
+    printf("Product Name\tQuantity\tPrice\n");
+    for (int i = 0; i < cart.num_products; i++) {
+        Product product = cart.products[i];
+        printf("%s\t\t%d\t\t%d\n", product.name, product.quantity, product.price);
+    }
+    printf("\n");
+    printf("Subtotal: $%d\n", cart.subtotal);
+    if (cart.discount > 0) {
+        printf("Discount (%d): -$%d\n", cart.discount, cart.discount);
+    }
+    if (cart.shipping > 0) {
+        printf("Shipping: $%d\n", cart.shipping);
+    }
+    if (cart.gift_wrap > 0) {
+        printf("Gift Wrap: $%d\n", cart.gift_wrap);
+    }
+    printf("Total: $%d\n", cart.total);
+}
+
+int main() {
+    // Define the products
+    Product product_a = {"Product A", 20, 5};
+    Product product_b = {"Product B", 40, 15};
+    Product product_c = {"Product C", 50, 10};
+
+    // Define the cart
+    Cart cart = {0};
+    cart.products[0] = product_a;
+    cart.products[1] = product_b;
+    cart.products[2] = product_c;
+    cart.num_products = 3;
+
+    // Calculate the subtotal
+    for (int i = 0; i < cart.num_products; i++) {
+        Product product = cart.products[i];
+        cart.subtotal += product.price * product.quantity;
+    }
+
+    // Calculate the discounts
+    cart.discount = calculate_cart_discount(cart);
+
+    // Calculate the shipping fee
+    cart.shipping = calculate_shipping_fee(cart);
+
+    // Calculate the gift wrap fee
+    cart.gift_wrap = calculate_gift_wrap_fee(cart);
+
+    // Calculate the total
+    cart.total = calculate_total(cart);
+
+    // Print the cart summary
+    print_cart_summary(cart);
+
+    return 0;
+}
